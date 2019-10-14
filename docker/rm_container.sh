@@ -1,0 +1,1 @@
+docker rm tynguyen_torch_darts_docker

@@ -82,6 +82,11 @@ def _data_transforms_cifar10(args):
 def count_parameters_in_MB(model):
   return np.sum(np.prod(v.size()) for name, v in model.named_parameters() if "auxiliary" not in name)/1e6
 
+def count_parameters_in_numels(model):
+  total_params = np.sum([p.numel() for p in model.parameters()])
+  total_trainable_params = np.sum([p.numel() for p in model.parameters() if p.requires_grad])
+  
+  return total_params, total_trainable_params
 
 def save_checkpoint(state, is_best, save):
   filename = os.path.join(save, 'checkpoint.pth.tar')

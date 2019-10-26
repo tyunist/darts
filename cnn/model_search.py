@@ -5,7 +5,10 @@ from operations import *
 from torch.autograd import Variable
 from genotypes import PRIMITIVES
 from genotypes import Genotype
+import utils
+import sys, logging
 
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 class MixedOp(nn.Module):
 
@@ -98,6 +101,11 @@ class Network(nn.Module):
     model_new = Network(self._C, self._num_classes, self._layers, self._criterion).cuda()
     for x, y in zip(model_new.arch_parameters(), self.arch_parameters()):
         x.data.copy_(y.data)
+    logging.debug("====================================")
+    total_params, total_trainable_params = utils.count_parameters_in_numels(model_new)
+    logging.debug("New model, param size = %f Mils with %f Mils trainable"%(total_params/1e6, total_trainable_params/1e6))
+    logging.debug("====================================")
+
     return model_new
 
   def forward(self, input):

@@ -46,6 +46,8 @@ class Architect(object):
 
     unrolled_loss.backward()
     dalpha = [v.grad for v in unrolled_model.arch_parameters()]
+    import pdb
+    pdb.set_trace()
     vector = [v.grad.data for v in unrolled_model.parameters()]
     implicit_grads = self._hessian_vector_product(vector, input_train, target_train)
 
@@ -74,6 +76,8 @@ class Architect(object):
     return model_new.cuda()
 
   def _hessian_vector_product(self, vector, input, target, r=1e-2):
+    ''' This computes the value in Eq.8
+    '''
     R = r / _concat(vector).norm()
     for p, v in zip(self.model.parameters(), vector):
       p.data.add_(R, v)

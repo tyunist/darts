@@ -10,7 +10,9 @@ def plot(genotype, filename):
       node_attr=dict(style='filled', shape='rect', align='center', fontsize='20', height='0.5', width='0.5', penwidth='2', fontname="times"),
       engine='dot')
   g.body.extend(['rankdir=LR'])
-
+  
+  import pdb
+  pdb.set_trace()
   g.node("c_{k-2}", fillcolor='darkseagreen2')
   g.node("c_{k-1}", fillcolor='darkseagreen2')
   assert len(genotype) % 2 == 0

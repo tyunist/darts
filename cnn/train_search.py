@@ -17,6 +17,7 @@ from torch.autograd import Variable
 from model_search import Network
 from architect import Architect
 
+MAX_TIME = 40507
 
 parser = argparse.ArgumentParser("cifar")
 parser.add_argument('--data', type=str, default='../data', help='location of the data corpus')
@@ -27,9 +28,9 @@ parser.add_argument('--momentum', type=float, default=0.9, help='momentum')
 parser.add_argument('--weight_decay', type=float, default=3e-4, help='weight decay')
 parser.add_argument('--report_freq', type=float, default=50, help='report frequency')
 parser.add_argument('--gpu', type=int, default=0, help='gpu device id')
-parser.add_argument('--epochs', type=int, default=50, help='num of training epochs')
+parser.add_argument('--epochs', type=int, default=100, help='num of training epochs')
 parser.add_argument('--init_channels', type=int, default=16, help='num of init channels')
-parser.add_argument('--layers', type=int, default=8, help='total number of layers')
+parser.add_argument('--layers', type=int, default=4, help='total number of layers')
 parser.add_argument('--model_path', type=str, default='saved_models', help='path to save the model')
 parser.add_argument('--cutout', action='store_true', default=False, help='use cutout')
 parser.add_argument('--cutout_length', type=int, default=16, help='cutout length')
@@ -107,17 +108,31 @@ def main():
         optimizer, float(args.epochs), eta_min=args.learning_rate_min)
 
   architect = Architect(model, args)
+  
+  start_time = time.time()
 
   for epoch in range(args.epochs):
     scheduler.step()
     lr = scheduler.get_lr()[0]
-    logging.info('epoch %d lr %e', epoch, lr)
+    train_time = time.time() - start_time 
+    logging.info('[%.6fs]epoch %d lr %e', train_time, epoch, lr)
+    if train_time > MAX_TIME:
+      logging.info('-----------------------------------')
+      logging.info('Max training time %.2f = MAX_TIME passed!')
+      break
 
     genotype = model.genotype()
     logging.info('genotype = %s', genotype)
+    tmp = F.softmax(model.alphas_normal, dim=-1).detach().cpu().numpy()
+    normal_opt_selection_matrix = np.array2string(tmp, formatter={'float_kind':lambda tmp: "%.6f"%tmp})
+    tmp = F.softmax(model.alphas_reduce, dim=-1).detach().cpu().numpy()
+    reduce_opt_selection_matrix = np.array2string(tmp, formatter={'float_kind':lambda tmp: "%.6f"%tmp})
+    #print(normal_opt_selection_matrix)
+    #print(reduce_opt_selection_matrix)
+    logging.info('Operation Selection Matrix:')
+    logging.info('\n%s', normal_opt_selection_matrix)     
+    logging.info('\n%s', reduce_opt_selection_matrix)     
 
-    print(F.softmax(model.alphas_normal, dim=-1))
-    print(F.softmax(model.alphas_reduce, dim=-1))
 
     # training
     train_acc, train_obj = train(train_queue, valid_queue, model, architect, criterion, optimizer, lr)

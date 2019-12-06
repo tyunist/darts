@@ -27,7 +27,7 @@ class MixedOp(nn.Module):
 
 class Cell(nn.Module):
 
-  def __init__(self, steps, multiplier, C_prev_prev, C_prev, C, reduction, reduction_prev):
+  def __init__(self, steps, multiplier, C_prev_prev, C_prev, C, reduction, reduction_prev, concat_nodes=False):
     super(Cell, self).__init__()
     self.reduction = reduction
 
@@ -46,6 +46,7 @@ class Cell(nn.Module):
         stride = 2 if reduction and j < 2 else 1
         op = MixedOp(C, stride)
         self._ops.append(op)
+    self.concat_nodes = concat_nodes
 
   def forward(self, s0, s1, weights):
     s0 = self.preprocess0(s0)
@@ -57,13 +58,14 @@ class Cell(nn.Module):
       s = sum(self._ops[offset+j](h, weights[offset+j]) for j, h in enumerate(states))
       offset += len(states)
       states.append(s)
-
-    return torch.cat(states[-self._multiplier:], dim=1)
-
+    if self.concat_nodes:
+      return torch.cat(states[-self._multiplier:], dim=1)
+    else:
+      return torch.stack(states[-self._multiplier:], dim=1).sum(dim=1)
 
 class Network(nn.Module):
 
-  def __init__(self, C, num_classes, layers, criterion, steps=4, multiplier=4, stem_multiplier=3):
+  def __init__(self, C, num_classes, layers, criterion, steps=4, multiplier=1, stem_multiplier=1, concat_nodes=False):
     super(Network, self).__init__()
     self._C = C
     self._num_classes = num_classes
@@ -82,15 +84,15 @@ class Network(nn.Module):
     self.cells = nn.ModuleList()
     reduction_prev = False
     for i in range(layers):
-      if i in [layers//3, 2*layers//3]:
+      if i < layers-1:
         C_curr *= 2
         reduction = True
       else:
         reduction = False
-      cell = Cell(steps, multiplier, C_prev_prev, C_prev, C_curr, reduction, reduction_prev)
+      cell = Cell(steps, multiplier, C_prev_prev, C_prev, C_curr, reduction, reduction_prev, concat_nodes)
       reduction_prev = reduction
       self.cells += [cell]
-      C_prev_prev, C_prev = C_prev, multiplier*C_curr
+      C_prev_prev, C_prev = C_prev, multiplier*C_curr if concat_nodes else C_curr
 
     self.global_pooling = nn.AdaptiveAvgPool2d(1)
     self.classifier = nn.Linear(C_prev, num_classes)

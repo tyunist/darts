@@ -79,6 +79,30 @@ def _data_transforms_cifar10(args):
   return train_transform, valid_transform
 
 
+def _data_transforms_imagenet(args):
+  imagenet_mean = [0.485, 0.456, 0.406]
+  imagenet_std  = [0.229, 0.224, 0.225] 
+  normalize     = transforms.Normalize(mean=imagenet_mean, std=imagenet_std)
+  train_transform = transforms.Compose([
+    transforms.RandomResizedCrop((args.img_w, args.img_h)),
+    transforms.RandomHorizontalFlip(),
+    transforms.ColorJitter(
+              brightness=0.4,
+              contrast=0.4,
+              saturation=0.4,
+              hue=0.2),
+    transforms.ToTensor(),
+    normalize
+  ])
+
+  valid_transform = transforms.Compose([
+    transforms.Resize((args.img_w, args.img_h)), 
+    transforms.ToTensor(),
+    normalize,
+    ])
+  return train_transform, valid_transform
+
+
 def count_parameters_in_MB(model):
   return np.sum(np.prod(v.size()) for name, v in model.named_parameters() if "auxiliary" not in name)/1e6
 

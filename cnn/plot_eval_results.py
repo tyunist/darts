@@ -2,6 +2,9 @@ import numpy as np
 import os, csv 
 import matplotlib.pyplot as plt 
 
+DATASET = "imagewoof2"
+
+folder = "./eval-imagewoof2dataset-4layers-sgd-1.0E-07adap_d-1.0E-09lr-EXP-20191210-221620"
 train_colors = ["b", "b"]
 val_colors   = ["0.5", "0.5"]
 
@@ -26,7 +29,7 @@ def plot(train_mat, val_mat, plot_legends, figure_file):
         ax.plot(x_axis, val_mat[i],   color=val_colors[i],   ls=line_types[i])
 
     ax.set_xlabel('Epochs')
-    ax.set_ylabel('CIFAR-10 Accuracy (%)')
+    ax.set_ylabel('{} Accuracy (%)'.format(DATASET))
     
     ax.legend(plot_legends)
     plt.tight_layout()
@@ -35,8 +38,6 @@ def plot(train_mat, val_mat, plot_legends, figure_file):
 
 
 def main():
-    folder  = "./eval-4layers-EXP-20191204-134638" 
-    folder  = "./eval-EXP-20191205-182946"
     logfile = folder + "/log.txt"
     savefig_file = folder + "/plot_results.eps"
     train_top1_list = [] 
@@ -52,7 +53,8 @@ def main():
         line_count = 1
         while line:
             line = f.readline()
-            if("valid 150" in line):
+            valid_key = "valid 150" if DATASET == "CIFAR-10" else "valid 050"
+            if(valid_key in line):
                 line = line.split(" ")
                 print(line)
                 val_top5 = float(line[-1]) 
@@ -64,7 +66,8 @@ def main():
                 val_top1_list.append(val_top1)
                 val_top5_list.append(val_top5)
                 val_acc_list.append(val_acc)
-            if("train 750" in line):
+            train_key = "train 750" if DATASET == "CIFAR-10" else "train 100"
+            if(train_key in line):
                 line = line.split(" ")
                 print(line)
                 train_top5 = float(line[-1]) 

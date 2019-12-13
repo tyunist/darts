@@ -82,6 +82,7 @@ DARTS_16_init_4_layers = Genotype(normal=[('dil_conv_3x3', 0), ('dil_conv_3x3', 
 
 DARTS_16_init_4_layers_40500s = Genotype(normal=[('dil_conv_3x3', 0), ('dil_conv_3x3', 1), ('dil_conv_3x3', 2), ('skip_connect', 0), ('skip_connect', 0), ('dil_conv_5x5', 3), ('dil_conv_5x5', 0), ('dil_conv_5x5', 1)], normal_concat=range(5, 6), reduce=[('max_pool_3x3', 0), ('max_pool_3x3', 1), ('sep_conv_5x5', 0), ('skip_connect', 2), ('max_pool_3x3', 0), ('max_pool_3x3', 1), ('max_pool_3x3', 1), ('max_pool_3x3', 0)], reduce_concat=range(5, 6))
 
+DARTS_4layers_imagewoof2 = Genotype(normal=[('dil_conv_3x3', 0), ('dil_conv_3x3', 1), ('dil_conv_3x3', 2), ('dil_conv_3x3', 0), ('sep_conv_3x3', 2), ('dil_conv_3x3', 3), ('sep_conv_3x3', 2), ('skip_connect', 0)], normal_concat=range(5, 6), reduce=[('max_pool_3x3', 1), ('dil_conv_3x3', 0), ('dil_conv_5x5', 2), ('avg_pool_3x3', 1), ('dil_conv_5x5', 3), ('dil_conv_5x5', 2), ('dil_conv_3x3', 1), ('dil_conv_5x5', 2)], reduce_concat=range(5, 6))
 
 DARTS = DARTS_16_init_4_layers_40500s 
 
